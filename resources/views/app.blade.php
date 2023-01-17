@@ -12,9 +12,10 @@
         <!-- Scripts -->
         @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
+
         @inertiaHead
     </head>
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased min-h-screen bg-orange-50 dark:bg-slate-800">
         @inertia
     </body>
 </html>
