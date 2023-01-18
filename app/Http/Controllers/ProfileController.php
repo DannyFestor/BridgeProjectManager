@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\Profile\UpdateEmailRequest;
+use App\Http\Requests\Profile\UpdateNameRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ class ProfileController extends Controller
     {
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'isVerifiedEmail' => $request->user()->email_verified_at !== null,
             'status' => session('status'),
         ]);
     }
@@ -27,12 +29,22 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function updateName(UpdateNameRequest $request): RedirectResponse
+    {
+        $request->user()->fill($request->validated());
+
+        $request->user()->save();
+
+        return Redirect::route('profile.edit');
+    }
+
+    public function updateEmail(UpdateEmailRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
+            $request->user()->sendEmailVerificationNotification();
         }
 
         $request->user()->save();

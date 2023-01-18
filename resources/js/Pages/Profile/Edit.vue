@@ -2,12 +2,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
+import UpdateEmailInformationForm from './Partials/UpdateEmailInformationForm.vue';
 import { Head } from '@inertiajs/inertia-vue3';
+import UpdateNameInformationForm from '@/Pages/Profile/Partials/UpdateNameInformationForm.vue';
 
-defineProps({
+const props = defineProps({
   mustVerifyEmail: Boolean,
-  status: String,
+  status: {
+    type: String,
+    default: null,
+  },
+  isVerifiedEmail: Boolean,
 });
 </script>
 
@@ -20,10 +25,16 @@ defineProps({
         <div
           class="w-full bg-white p-4 shadow dark:bg-slate-600 dark:text-white sm:rounded-lg sm:p-8"
         >
-          <UpdateProfileInformationForm
-            :must-verify-email="mustVerifyEmail"
-            :status="status"
-            class="max-w-xl"
+          <UpdateNameInformationForm />
+        </div>
+
+        <div
+          class="w-full bg-white p-4 shadow dark:bg-slate-600 dark:text-white sm:rounded-lg sm:p-8"
+        >
+          <UpdateEmailInformationForm
+            :must-verify-email="props.mustVerifyEmail"
+            :status="props.status"
+            :is-verified-email="props.isVerifiedEmail"
           />
         </div>
 
