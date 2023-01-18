@@ -16,6 +16,6 @@ class ProjectSeeder extends Seeder
      */
     public function run(Collection $users)
     {
-        $users->each(fn(User $user) => Project::factory(10)->for($user, 'owner')->create());
+        $users->each(fn (User $user) => Project::factory(10)->for($user, 'owner')->create());
     }
 }

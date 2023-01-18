@@ -24,8 +24,7 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param StoreRequest $request
-     *
+     * @param  StoreRequest  $request
      * @return RedirectResponse
      */
     public function store(StoreRequest $request): RedirectResponse
@@ -53,8 +52,7 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param Project $project
-     *
+     * @param  Project  $project
      * @return Response
      */
     public function show(Project $project): Response
@@ -67,8 +65,7 @@ class ProjectController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Project $project
-     *
+     * @param  Project  $project
      * @return Response
      */
     public function edit(Project $project): Response
@@ -81,9 +78,8 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param UpdateRequest $request
-     * @param Project       $project
-     *
+     * @param  UpdateRequest  $request
+     * @param  Project  $project
      * @return RedirectResponse
      */
     public function update(UpdateRequest $request, Project $project): RedirectResponse
@@ -97,8 +93,7 @@ class ProjectController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Project $project
-     *
+     * @param  Project  $project
      * @return RedirectResponse
      */
     public function destroy(Project $project): RedirectResponse

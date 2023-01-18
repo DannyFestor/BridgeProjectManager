@@ -15,18 +15,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-         \App\Models\User::factory()->create([
-             'first_name' => 'Danny',
-             'last_name' => 'Festor',
-             'user_name' => 'dannyfestor',
-             'email' => 'danny@festor.info',
-         ]);
-         \App\Models\User::factory(10)->create();
+        User::factory()->create([
+            'first_name' => 'Danny',
+            'last_name' => 'Festor',
+            'user_name' => 'dannyfestor',
+            'email' => 'danny@festor.info',
+        ]);
+        User::factory(10)->create();
 
-         $users = User::all();
-         $this->callWith([
-             ProjectSeeder::class
-         ], ['users' => $users]);
-
+        $users = User::all();
+        $this->callWith([
+            ProjectSeeder::class,
+        ], ['users' => $users]);
     }
 }
