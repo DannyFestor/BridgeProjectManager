@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
@@ -74,5 +75,13 @@ class User extends Authenticatable implements MustVerifyEmail
         return Attribute::make(
             get: fn ($value, $attributes) => asset('storage/avatars/' . $attributes['uuid'] . '.png' ),
         );
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function ownedProjects(): HasMany
+    {
+        return $this->hasMany(Project::class);
     }
 }

@@ -17,13 +17,23 @@ const logout = () => {
   <nav
     class="fixed top-0 left-0 right-0 flex h-12 justify-between bg-orange-200 shadow dark:bg-slate-900 dark:text-slate-50"
   >
-    <section>
+    <section class="flex">
       <Link
         :href="route('dashboard')"
         class="flex h-full items-center px-4 py-1 text-3xl font-bold transition-all hover:bg-black hover:bg-opacity-10"
         >BPM</Link
       >
+
+      <Link
+        title="Create A New Project"
+        :href="route('projects.create')"
+        class="transistion flex h-full flex-col items-center justify-center px-4 py-1 font-bold hover:bg-black hover:bg-opacity-10"
+      >
+        <span class="text-3xl"> &plus; </span>
+        <span class="-translate-y-[8px] text-xs">Project</span>
+      </Link>
     </section>
+
     <section v-click-outside="close" class="relative flex items-center">
       <DarkButton />
       <button

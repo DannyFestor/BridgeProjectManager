@@ -25,15 +25,23 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', \App\Http\Controllers\DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile/name', [ProfileController::class, 'updateName'])->name('profile.update.name');
     Route::patch('/profile/email', [ProfileController::class, 'updateEmail'])->name('profile.update.email');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    /** Project */
+    Route::group(['prefix' => 'projects', 'as' => 'projects.'], function () {
+        Route::get('/create', [\App\Http\Controllers\ProjectController::class, 'create'])->name('create');
+        Route::get('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('show');
+        Route::post('/create', [\App\Http\Controllers\ProjectController::class, 'store'])->name('store');
+        Route::post('/{project:uuid}/edit', [\App\Http\Controllers\ProjectController::class, 'edit'])->name('edit');
+        Route::patch('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'update'])->name('update');
+        Route::delete('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'destroy'])->name('destroy');
+    });
 });
 
 require __DIR__.'/auth.php';

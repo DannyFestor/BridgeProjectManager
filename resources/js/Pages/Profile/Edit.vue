@@ -5,6 +5,8 @@ import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateEmailInformationForm from './Partials/UpdateEmailInformationForm.vue';
 import { Head } from '@inertiajs/inertia-vue3';
 import UpdateNameInformationForm from '@/Pages/Profile/Partials/UpdateNameInformationForm.vue';
+import OuterContainer from '@/Components/OuterContainer.vue';
+import InnerContainer from '@/Components/InnerContainer.vue';
 
 const props = defineProps({
   mustVerifyEmail: Boolean,
@@ -20,36 +22,26 @@ const props = defineProps({
   <Head title="Profile" />
 
   <AuthenticatedLayout>
-    <div class="py-12">
-      <div class="mx-auto w-full max-w-7xl space-y-6 sm:px-6 lg:px-8">
-        <div
-          class="w-full bg-white p-4 shadow dark:bg-slate-600 dark:text-white sm:rounded-lg sm:p-8"
-        >
-          <UpdateNameInformationForm />
-        </div>
+    <OuterContainer>
+      <InnerContainer>
+        <UpdateNameInformationForm />
+      </InnerContainer>
 
-        <div
-          class="w-full bg-white p-4 shadow dark:bg-slate-600 dark:text-white sm:rounded-lg sm:p-8"
-        >
-          <UpdateEmailInformationForm
-            :must-verify-email="props.mustVerifyEmail"
-            :status="props.status"
-            :is-verified-email="props.isVerifiedEmail"
-          />
-        </div>
+      <InnerContainer>
+        <UpdateEmailInformationForm
+          :must-verify-email="props.mustVerifyEmail"
+          :status="props.status"
+          :is-verified-email="props.isVerifiedEmail"
+        />
+      </InnerContainer>
 
-        <div
-          class="w-full bg-white p-4 shadow dark:bg-slate-600 dark:text-white sm:rounded-lg sm:p-8"
-        >
-          <UpdatePasswordForm />
-        </div>
+      <InnerContainer>
+        <UpdatePasswordForm />
+      </InnerContainer>
 
-        <div
-          class="w-full bg-white p-4 shadow dark:bg-slate-600 dark:text-white sm:rounded-lg sm:p-8"
-        >
-          <DeleteUserForm class="max-w-xl" />
-        </div>
-      </div>
-    </div>
+      <InnerContainer>
+        <DeleteUserForm class="max-w-xl" />
+      </InnerContainer>
+    </OuterContainer>
   </AuthenticatedLayout>
 </template>

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,6 +22,11 @@ class DatabaseSeeder extends Seeder
              'email' => 'danny@festor.info',
          ]);
          \App\Models\User::factory(10)->create();
+
+         $users = User::all();
+         $this->callWith([
+             ProjectSeeder::class
+         ], ['users' => $users]);
 
     }
 }
