@@ -1,8 +1,5 @@
 <script setup>
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
 import { Link, useForm, usePage } from '@inertiajs/inertia-vue3';
 
 const props = defineProps({
@@ -13,90 +10,115 @@ const props = defineProps({
 const user = usePage().props.value.auth.user;
 
 const form = useForm({
-  name: user.name,
+  user_name: user.user_name,
+  first_name: user.first_name,
+  last_name: user.last_name,
   email: user.email,
 });
 </script>
 
 <template>
-  <section>
-    <header>
-      <h2 class="text-lg font-medium text-gray-900">Profile Information</h2>
+  <header>
+    <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100">
+      Profile Information
+    </h2>
 
-      <p class="mt-1 text-sm text-gray-600">
-        Update your account's profile information and email address.
+    <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">
+      Update your account's profile information and email address.
+    </p>
+  </header>
+
+  <form
+    class="grid w-full gap-4 sm:grid-cols-2"
+    @submit.prevent="form.patch(route('profile.update'))"
+  >
+    <div class="flex flex-col">
+      <label for="first_name">First Name</label>
+      <input
+        id="first_name"
+        v-model="form.first_name"
+        name="first_name"
+        type="text"
+        class="form-input rounded text-black dark:bg-slate-500 dark:text-slate-50"
+      />
+
+      <div
+        v-if="form.errors.first_name"
+        class="w-full text-sm text-red-600 dark:text-red-200"
+      >
+        {{ form.errors.first_name }}
+      </div>
+    </div>
+
+    <div class="flex flex-col">
+      <label for="first_name">Last Name</label>
+      <input
+        id="last_name"
+        v-model="form.last_name"
+        name="last_name"
+        type="text"
+        class="form-input rounded text-black dark:bg-slate-500 dark:text-slate-50"
+      />
+
+      <div
+        v-if="form.errors.last_name"
+        class="w-full text-sm text-red-600 dark:text-red-200"
+      >
+        {{ form.errors.last_name }}
+      </div>
+    </div>
+
+    <div class="flex flex-col">
+      <label for="first_name">Email</label>
+      <input
+        id="email"
+        v-model="form.email"
+        name="email"
+        type="text"
+        class="form-input rounded text-black dark:bg-slate-500 dark:text-slate-50"
+      />
+
+      <div
+        v-if="form.errors.email"
+        class="w-full text-sm text-red-600 dark:text-red-200"
+      >
+        {{ form.errors.email }}
+      </div>
+    </div>
+
+    <div v-if="props.mustVerifyEmail && user.email_verified_at === null">
+      <p class="mt-2 text-sm text-gray-800">
+        Your email address is unverified.
+        <Link
+          :href="route('verification.send')"
+          method="post"
+          as="button"
+          class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          Click here to re-send the verification email.
+        </Link>
       </p>
-    </header>
 
-    <form
-      class="mt-6 space-y-6"
-      @submit.prevent="form.patch(route('profile.update'))"
-    >
-      <div>
-        <InputLabel for="name" value="Name" />
-
-        <TextInput
-          id="name"
-          v-model="form.name"
-          type="text"
-          class="mt-1 block w-full"
-          required
-          autofocus
-          autocomplete="name"
-        />
-
-        <InputError class="mt-2" :message="form.errors.name" />
+      <div
+        v-show="props.status === 'verification-link-sent'"
+        class="mt-2 text-sm font-medium text-green-600"
+      >
+        A new verification link has been sent to your email address.
       </div>
+    </div>
 
-      <div>
-        <InputLabel for="email" value="Email" />
+    <div class="flex items-center gap-4">
+      <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
 
-        <TextInput
-          id="email"
-          v-model="form.email"
-          type="email"
-          class="mt-1 block w-full"
-          required
-          autocomplete="email"
-        />
-
-        <InputError class="mt-2" :message="form.errors.email" />
-      </div>
-
-      <div v-if="props.mustVerifyEmail && user.email_verified_at === null">
-        <p class="text-sm mt-2 text-gray-800">
-          Your email address is unverified.
-          <Link
-            :href="route('verification.send')"
-            method="post"
-            as="button"
-            class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Click here to re-send the verification email.
-          </Link>
+      <Transition
+        enter-from-class="opacity-0"
+        leave-to-class="opacity-0"
+        class="transition ease-in-out"
+      >
+        <p v-if="form.recentlySuccessful" class="text-sm text-gray-600">
+          Saved.
         </p>
-
-        <div
-          v-show="props.status === 'verification-link-sent'"
-          class="mt-2 font-medium text-sm text-green-600"
-        >
-          A new verification link has been sent to your email address.
-        </div>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
-
-        <Transition
-          enter-from-class="opacity-0"
-          leave-to-class="opacity-0"
-          class="transition ease-in-out"
-        >
-          <p v-if="form.recentlySuccessful" class="text-sm text-gray-600">
-            Saved.
-          </p>
-        </Transition>
-      </div>
-    </form>
-  </section>
+      </Transition>
+    </div>
+  </form>
 </template>

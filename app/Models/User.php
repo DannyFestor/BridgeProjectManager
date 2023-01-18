@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helper\AvatarHelper;
 use App\Traits\HasUUID;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 use function Pest\Laravel\put;
@@ -53,11 +55,17 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected static function booted()
     {
+        self::updating(function (self $user) {
+            if (
+                Str::upper(Str::substr($user->first_name, 0, 1)) !== Str::upper(Str::substr($user->getOriginal('first_name'), 0, 1)) ||
+                Str::upper(Str::substr($user->last_name, 0, 1)) !== Str::upper(Str::substr($user->getOriginal('last_name'), 0, 1))
+            ) {
+                AvatarHelper::make($user->first_name, $user->last_name, $user->uuid);
+            }
+        });
+
         self::created(function (self $user) {
-            $name = urlencode($user->first_name . '_' . $user->last_name);
-            $avatar = file_get_contents("https://ui-avatars.com/api/?background=random&name={$name}");
-            $path = storage_path("app/public/avatars/{$user->uuid}.png");
-            \File::put($path, $avatar);
+            AvatarHelper::make($user->first_name, $user->last_name, $user->uuid);
         });
     }
 
