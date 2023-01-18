@@ -5,9 +5,12 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
+import InputContainer from '@/Components/InputContainer.vue';
 
 const form = useForm({
-  name: '',
+  first_name: '',
+  last_name: '',
+  user_name: '',
   email: '',
   password: '',
   password_confirmation: '',
@@ -25,24 +28,54 @@ const submit = () => {
   <GuestLayout>
     <Head title="Register" />
 
-    <form @submit.prevent="submit">
-      <div>
-        <InputLabel for="name" value="Name" />
+    <form class="flex flex-col gap-2" @submit.prevent="submit">
+      <InputContainer>
+        <InputLabel for="first_name">First Name</InputLabel>
 
         <TextInput
-          id="name"
-          v-model="form.name"
+          id="first_name"
+          v-model="form.first_name"
           type="text"
           class="mt-1 block w-full"
           required
           autofocus
-          autocomplete="name"
+          autocomplete="first_name"
         />
 
-        <InputError class="mt-2" :message="form.errors.name" />
-      </div>
+        <InputError class="mt-2" :message="form.errors.first_name" />
+      </InputContainer>
+      <InputContainer>
+        <InputLabel for="last_name">Last Name</InputLabel>
 
-      <div class="mt-4">
+        <TextInput
+          id="last_name"
+          v-model="form.last_name"
+          type="text"
+          class="mt-1 block w-full"
+          required
+          autofocus
+          autocomplete="last_name"
+        />
+
+        <InputError class="mt-2" :message="form.errors.last_name" />
+      </InputContainer>
+      <InputContainer>
+        <InputLabel for="user_name">User Name</InputLabel>
+
+        <TextInput
+          id="user_name"
+          v-model="form.user_name"
+          type="text"
+          class="mt-1 block w-full"
+          required
+          autofocus
+          autocomplete="user_name"
+        />
+
+        <InputError class="mt-2" :message="form.errors.user_name" />
+      </InputContainer>
+
+      <InputContainer>
         <InputLabel for="email" value="Email" />
 
         <TextInput
@@ -55,9 +88,9 @@ const submit = () => {
         />
 
         <InputError class="mt-2" :message="form.errors.email" />
-      </div>
+      </InputContainer>
 
-      <div class="mt-4">
+      <InputContainer>
         <InputLabel for="password" value="Password" />
 
         <TextInput
@@ -70,9 +103,9 @@ const submit = () => {
         />
 
         <InputError class="mt-2" :message="form.errors.password" />
-      </div>
+      </InputContainer>
 
-      <div class="mt-4">
+      <InputContainer>
         <InputLabel for="password_confirmation" value="Confirm Password" />
 
         <TextInput
@@ -85,12 +118,12 @@ const submit = () => {
         />
 
         <InputError class="mt-2" :message="form.errors.password_confirmation" />
-      </div>
+      </InputContainer>
 
-      <div class="flex items-center justify-end mt-4">
+      <div class="mt-4 flex items-center justify-end">
         <Link
           :href="route('login')"
-          class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          class="rounded-md text-sm text-gray-600 text-slate-300 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:hover:text-slate-200"
         >
           Already registered?
         </Link>

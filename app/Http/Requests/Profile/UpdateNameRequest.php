@@ -13,7 +13,7 @@ class UpdateNameRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'user_name' => ['required', 'string', 'max:255'],
+            'user_name' => ['required', Rule::unique('users')->ignore($this->user()->id), 'string', 'max:255'],
         ];
     }
 }
