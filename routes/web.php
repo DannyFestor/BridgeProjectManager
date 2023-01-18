@@ -35,10 +35,11 @@ Route::middleware('auth')->group(function () {
 
     /** Project */
     Route::group(['prefix' => 'projects', 'as' => 'projects.'], function () {
+        Route::get('/', [\App\Http\Controllers\ProjectController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\ProjectController::class, 'create'])->name('create');
         Route::get('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('show');
         Route::post('/create', [\App\Http\Controllers\ProjectController::class, 'store'])->name('store');
-        Route::post('/{project:uuid}/edit', [\App\Http\Controllers\ProjectController::class, 'edit'])->name('edit');
+        Route::get('/{project:uuid}/edit', [\App\Http\Controllers\ProjectController::class, 'edit'])->name('edit');
         Route::patch('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'update'])->name('update');
         Route::delete('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'destroy'])->name('destroy');
     });

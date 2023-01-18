@@ -2,85 +2,109 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Project\StoreRequest;
+use App\Http\Requests\Project\UpdateRequest;
 use App\Models\Project;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ProjectController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return RedirectResponse
      */
-    public function index()
+    public function index(): RedirectResponse
     {
         return redirect()->route('dashboard');
     }
 
     /**
+     * Store a newly created resource in storage.
+     *
+     * @param StoreRequest $request
+     *
+     * @return RedirectResponse
+     */
+    public function store(StoreRequest $request): RedirectResponse
+    {
+        $project = Project::create([
+            'user_id' => $request->user()->id,
+            'title' => $request->title,
+            'description' => $request->description,
+            'settings' => $request->settings,
+        ]);
+
+        return redirect()->route('projects.show', $project)->with('success', 'Project was created.');
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function create()
+    public function create(): Response
     {
         return Inertia::render('Project/Create');
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Project  $project
-     * @return \Illuminate\Http\Response
+     * @param Project $project
+     *
+     * @return Response
      */
-    public function show(Project $project)
+    public function show(Project $project): Response
     {
-        //
+        return Inertia::render('Project/Show', [
+            'project' => $project->only(['uuid', 'title', 'description', 'user_id']),
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Project  $project
-     * @return \Illuminate\Http\Response
+     * @param Project $project
+     *
+     * @return Response
      */
-    public function edit(Project $project)
+    public function edit(Project $project): Response
     {
-        //
+        return Inertia::render('Project/Edit', [
+            'project' => $project->only(['uuid', 'title', 'description', 'user_id']),
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Project  $project
-     * @return \Illuminate\Http\Response
+     * @param UpdateRequest $request
+     * @param Project       $project
+     *
+     * @return RedirectResponse
      */
-    public function update(Request $request, Project $project)
+    public function update(UpdateRequest $request, Project $project): RedirectResponse
     {
-        //
+        $project->fill($request->validated());
+        $project->save();
+
+        return redirect()->route('projects.show', $project)->with('success', 'Project was updated.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Project  $project
-     * @return \Illuminate\Http\Response
+     * @param Project $project
+     *
+     * @return RedirectResponse
      */
-    public function destroy(Project $project)
+    public function destroy(Project $project): RedirectResponse
     {
-        //
+        $project->delete();
+
+        return redirect()->back()->with('success', 'Project was deleted.');
     }
 }

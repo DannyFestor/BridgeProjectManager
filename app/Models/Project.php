@@ -20,6 +20,10 @@ class Project extends Model
         'settings',
     ];
 
+    protected $casts = [
+        'settings' => 'json',
+    ];
+
     /**
      * @return BelongsTo
      */
