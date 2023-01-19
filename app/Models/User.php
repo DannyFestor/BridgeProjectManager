@@ -7,6 +7,7 @@ use App\Traits\HasUUID;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -83,5 +84,13 @@ class User extends Authenticatable implements MustVerifyEmail
     public function ownedProjects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    /**
+     * @return BelongsToMany
+     */
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, ProjectUser::class);
     }
 }

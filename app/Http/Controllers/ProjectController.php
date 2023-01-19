@@ -59,6 +59,7 @@ class ProjectController extends Controller
     public function show(Project $project): Response
     {
         $project->load('owner');
+
         return Inertia::render('Project/Show', [
             'project' => ProjectResource::make($project),
         ]);

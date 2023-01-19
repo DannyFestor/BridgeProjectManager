@@ -59,11 +59,11 @@ class ProjectTest extends TestCase
             ->actingAs($this->user)
             ->get(route('projects.show', $project->uuid))
             ->assertStatus(Response::HTTP_OK)
-            ->assertInertia(fn(Assert $page) => $page
+            ->assertInertia(fn (Assert $page) => $page
                 ->component('Project/Show')
-                ->has('project', fn(Assert $page) => $page
-                    ->has('data', fn(Assert $page) => $page
-                        ->where('uuid', (string)$project->uuid)
+                ->has('project', fn (Assert $page) => $page
+                    ->has('data', fn (Assert $page) => $page
+                        ->where('uuid', (string) $project->uuid)
                         ->where('title', $project->title)
                         ->where('description', $project->description)
                         ->where('isOwner', $project->user_id === $this->user->id)
@@ -80,7 +80,7 @@ class ProjectTest extends TestCase
             ->actingAs($this->user)
             ->get(route('projects.create'))
             ->assertStatus(200)
-            ->assertInertia(fn(Assert $page) => $page
+            ->assertInertia(fn (Assert $page) => $page
                 ->component('Project/Create')
             );
     }
@@ -171,11 +171,11 @@ class ProjectTest extends TestCase
             ->actingAs($this->user)
             ->get(route('projects.edit', $project->uuid))
             ->assertStatus(200)
-            ->assertInertia(fn(Assert $page) => $page
+            ->assertInertia(fn (Assert $page) => $page
                 ->component('Project/Edit')
-                ->has('project', fn(Assert $page) => $page
-                    ->has('data', fn(Assert $page) => $page
-                        ->where('uuid', (string)$project->uuid)
+                ->has('project', fn (Assert $page) => $page
+                    ->has('data', fn (Assert $page) => $page
+                        ->where('uuid', (string) $project->uuid)
                         ->where('title', $project->title)
                         ->where('description', $project->description)
                         ->where('isOwner', $project->user_id === $this->user->id)

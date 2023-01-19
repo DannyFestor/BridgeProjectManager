@@ -12,7 +12,7 @@ class DashboardController extends Controller
     {
         return Inertia::render('Dashboard', [
             // TODO: Filter by Access
-            'projects' => fn() => ProjectResource::collection(
+            'projects' => fn () => ProjectResource::collection(
                 Project::select([
                     'uuid',
                     'title',
