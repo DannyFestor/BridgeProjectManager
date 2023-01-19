@@ -1,7 +1,7 @@
-<script setup>
-import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
+<script setup lang="ts">
+import { Project } from '@/Types/Project';
+import { computed, ref } from 'vue';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import DarkButton from '@/Partials/Layouts/DarkButton.vue';
 
 const isOpen = ref(false);
@@ -11,6 +11,8 @@ const close = () => (isOpen.value = false);
 const logout = () => {
   router.post(route('logout'));
 };
+
+const activeProject = computed<Project>(() => usePage().props.project?.data);
 </script>
 
 <template>
@@ -21,10 +23,18 @@ const logout = () => {
       <Link
         :href="route('dashboard')"
         class="flex h-full items-center px-4 py-1 text-3xl font-bold transition-all hover:bg-black hover:bg-opacity-10"
-        >BPM</Link
       >
-
+        BPM
+      </Link>
       <Link
+        v-if="!!activeProject"
+        :href="route('projects.edit', activeProject.uuid)"
+        class="flex h-full items-center px-4 py-1 text-3xl font-bold transition-all hover:bg-black hover:bg-opacity-10"
+      >
+        {{ activeProject.title }}
+      </Link>
+      <Link
+        v-if="!activeProject"
         title="Create A New Project"
         :href="route('projects.create')"
         class="transistion flex h-full flex-col items-center justify-center px-4 py-1 font-bold hover:bg-black hover:bg-opacity-10"
@@ -41,12 +51,12 @@ const logout = () => {
         @click.prevent="toggle"
       >
         <img
-          :src="$page.props.auth.user.avatar"
-          :alt="$page.props.auth.user.name"
+          :src="$page.props.auth.user.data.avatar"
+          :alt="$page.props.auth.user.data.name"
           class="h-full rounded-full"
         />
 
-        {{ $page.props.auth.user.name }}
+        {{ $page.props.auth.user.data.name }}
       </button>
 
       <Transition name="slide-fade">

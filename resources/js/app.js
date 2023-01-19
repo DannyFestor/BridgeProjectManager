@@ -14,7 +14,7 @@ const appName =
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,
   progress: {
-    color: '#FF0000',
+    color: '#',
     showSpinner: true,
   },
   resolve: (name) =>

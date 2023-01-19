@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Project\StoreRequest;
 use App\Http\Requests\Project\UpdateRequest;
+use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -57,8 +58,9 @@ class ProjectController extends Controller
      */
     public function show(Project $project): Response
     {
+        $project->load('owner');
         return Inertia::render('Project/Show', [
-            'project' => $project->only(['uuid', 'title', 'description', 'user_id']),
+            'project' => ProjectResource::make($project),
         ]);
     }
 
@@ -71,7 +73,7 @@ class ProjectController extends Controller
     public function edit(Project $project): Response
     {
         return Inertia::render('Project/Edit', [
-            'project' => $project->only(['uuid', 'title', 'description', 'user_id']),
+            'project' => ProjectResource::make($project),
         ]);
     }
 
@@ -100,6 +102,6 @@ class ProjectController extends Controller
     {
         $project->delete();
 
-        return redirect()->back()->with('success', 'Project was deleted.');
+        return redirect()->route('dashboard')->with('success', 'Project was deleted.');
     }
 }
