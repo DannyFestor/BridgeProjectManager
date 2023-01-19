@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Response;
 use Tests\TestCase;
 
 class ProjectUserTest extends TestCase
@@ -32,7 +33,8 @@ class ProjectUserTest extends TestCase
     /** @test */
     public function a_user_can_have_many_projects()
     {
-        $this->first_user->projects()->attach([$this->first_project->id, $this->second_project->id]);
+        // first project gets attached to owner automatically
+        $this->first_user->projects()->attach($this->second_project->id);
 
         $this->assertEquals($this->first_user->projects()->count(), 2);
         $this->assertDatabaseHas('project_user', ['project_id' => $this->first_project->id, 'user_id' => $this->first_user->id]);
@@ -42,10 +44,133 @@ class ProjectUserTest extends TestCase
     /** @test */
     public function a_project_can_have_many_users()
     {
-        $this->first_project->users()->attach([$this->first_user->id, $this->second_user->id]);
+        $this->first_project->users()->attach($this->second_user->id);
 
         $this->assertEquals($this->first_project->users()->count(), 2);
         $this->assertDatabaseHas('project_user', ['project_id' => $this->first_project->id, 'user_id' => $this->first_user->id]);
         $this->assertDatabaseHas('project_user', ['project_id' => $this->first_project->id, 'user_id' => $this->second_user->id]);
+    }
+
+    /** @test */
+    public function a_user_can_only_access_their_boards()
+    {
+        $this
+            ->actingAs($this->first_user)
+            ->get(route('projects.show', $this->first_project))
+            ->assertStatus(Response::HTTP_OK);
+
+        $this
+            ->actingAs($this->first_user)
+            ->get(route('projects.show', $this->second_project))
+            ->assertStatus(Response::HTTP_NOT_FOUND);
+    }
+
+    /** @test */
+    public function an_owner_can_update_a_board()
+    {
+        $attributes1 = [
+            'title' => 'New Title',
+            'description' => 'New Description',
+        ];
+
+        $this
+            ->actingAs($this->first_user)
+            ->patch(route('projects.update', $this->first_project), $attributes1)
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseHas('projects', $attributes1);
+
+        $attributes2 = [
+            'title' => 'Another Title',
+            'description' => 'Another Description',
+        ];
+        $this
+            ->actingAs($this->first_user)
+            ->patch(route('projects.update', $this->second_project), $attributes2)
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseMissing('projects', $attributes2);
+    }
+
+    /** @test */
+    public function a_manager_can_update_a_board()
+    {
+        // Case 1: is owner, is manager
+        $attributes1 = [
+            'title' => 'New Title',
+            'description' => 'New Description',
+        ];
+        $this
+            ->actingAs($this->first_user)
+            ->patch(route('projects.update', $this->first_project), $attributes1)
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseHas('projects', $attributes1);
+
+        // Case 2: is manager
+        $this->second_project->users()->attach($this->first_user, ['is_manager' => true]);
+        $attributes2 = [
+            'title' => 'Another Title',
+            'description' => 'Another Description',
+        ];
+        $this
+            ->actingAs($this->first_user)
+            ->patch(route('projects.update', $this->second_project), $attributes2)
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseHas('projects', $attributes2);
+
+        // Case 3: is member, but not manager
+        $project3 = Project::factory()->for($this->second_user, 'owner')->create();
+        $project3->users()->attach($this->first_user, ['is_manager' => false]);
+        $attributes3 = [
+            'title' => 'Yet Another Title',
+            'description' => 'Yet Another Description',
+        ];
+        $this
+            ->actingAs($this->first_user)
+            ->patch(route('projects.update', $project3), $attributes3)
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseMissing('projects', $attributes3);
+
+        // Case 4: is not member
+        $project4 = Project::factory()->for($this->second_user, 'owner')->create();
+        $attributes4 = [
+            'title' => 'A Fourth Title',
+            'description' => 'A Fourth Description',
+        ];
+        $this
+            ->actingAs($this->first_user)
+            ->patch(route('projects.update', $project4), $attributes4)
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseMissing('projects', $attributes4);
+    }
+
+    /** @test */
+    public function a_manager_can_delete_a_board()
+    {
+        $this
+            ->actingAs($this->first_user)
+            ->delete(route('projects.destroy', $this->first_project))
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseMissing('projects', $this->first_project->only(['uuid']));
+
+        $this->second_project->users()->attach($this->first_user, ['is_manager' => true]);
+        $this
+            ->actingAs($this->first_user)
+            ->delete(route('projects.destroy', $this->second_project))
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseMissing('projects', $this->second_project->only(['uuid']));
+
+        $project3 = Project::factory()->for($this->second_user, 'owner')->create();
+        $project3->users()->attach($this->first_user, ['is_manager' => false]);
+        $this
+            ->actingAs($this->first_user)
+            ->delete(route('projects.destroy', $project3))
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseHas('projects', $project3->only(['uuid']));
+
+        $project4 = Project::factory()->for($this->second_user, 'owner')->create();
+        $this
+            ->actingAs($this->first_user)
+            ->delete(route('projects.destroy', $project4))
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseHas('projects', $project4->only(['uuid']));
     }
 }

@@ -20,6 +20,7 @@ class ProjectFactory extends Factory
         return [
             'title' => Str::random(random_int(8, 16)),
             'description' => fake()->realText,
+            'settings' => '{"to": "#475569", "font": "#FFFFFF", "from": "#475569", "direction": "90"}',
         ];
     }
 }

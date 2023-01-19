@@ -9,6 +9,7 @@ use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
@@ -53,11 +54,18 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  Project  $project
+     * @param Request $request
+     * @param Project $project
+     *
      * @return Response
      */
-    public function show(Project $project): Response
+    public function show(Request $request, Project $project): Response
     {
+        $user = $request->user();
+        if(!$user->can('view', $project)) {
+            abort(404);
+        }
+
         $project->load('owner');
 
         return Inertia::render('Project/Show', [
@@ -68,11 +76,18 @@ class ProjectController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  Project  $project
+     * @param Request $request
+     * @param Project $project
+     *
      * @return Response
      */
-    public function edit(Project $project): Response
+    public function edit(Request $request, Project $project): Response
     {
+        $user = $request->user();
+        if(!$user->can('view', $project)) {
+            abort(404);
+        }
+
         return Inertia::render('Project/Edit', [
             'project' => ProjectResource::make($project),
         ]);
@@ -87,6 +102,11 @@ class ProjectController extends Controller
      */
     public function update(UpdateRequest $request, Project $project): RedirectResponse
     {
+        $user = $request->user();
+        if(!$user->can('update', $project)) {
+            abort(403);
+        }
+
         $project->fill($request->validated());
         $project->save();
 
@@ -96,11 +116,17 @@ class ProjectController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Project  $project
+     * @param Request $request
+     * @param Project $project
+     *
      * @return RedirectResponse
      */
-    public function destroy(Project $project): RedirectResponse
+    public function destroy(Request $request, Project $project): RedirectResponse
     {
+        $user = $request->user();
+        if(!$user->can('update', $project)) {
+            abort(403);
+        }
         $project->delete();
 
         return redirect()->route('dashboard')->with('success', 'Project was deleted.');

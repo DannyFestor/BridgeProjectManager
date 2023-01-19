@@ -20,7 +20,8 @@ class ProjectResource extends JsonResource
             'description' => $this->description,
             'settings' => json_decode($this->settings),
             'isOwner' => $request->user() ? $request->user()->id === $this->user_id : false,
-            'owner' => $this->whenLoaded('owner'),
+            'owner' => new UserResource($this->whenLoaded('owner')),
+            'pivot' => new ProjectUserResource($this->whenLoaded('pivot')),
         ];
     }
 }

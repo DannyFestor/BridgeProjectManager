@@ -24,6 +24,23 @@ class Project extends Model
         'settings',
     ];
 
+    protected static function booted()
+    {
+        parent::booted();
+
+        static::created(function (self $model) {
+            ProjectUser::create(
+                [
+                    'project_id' => $model->id,
+                    'user_id' => $model->user_id,
+                    'is_favorite' => true,
+                    'is_manager' => true,
+                    'settings' => $model->settings,
+                ]
+            );
+        });
+    }
+
     /**
      * @return BelongsTo
      */

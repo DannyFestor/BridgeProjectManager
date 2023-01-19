@@ -7,11 +7,16 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class ProjectUser extends Pivot
 {
-    protected $table = 'project_user';
-
     public $incrementing = false;
-
     public $timestamps = false;
+    protected $table = 'project_user';
+    protected $fillable = [
+        'project_id',
+        'user_id',
+        'is_favorite',
+        'is_manager',
+        'settings',
+    ];
 
     /**
      * @return BelongsTo
