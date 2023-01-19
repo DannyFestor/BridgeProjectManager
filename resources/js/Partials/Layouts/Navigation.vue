@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import { Link } from '@inertiajs/inertia-vue3';
-import { Inertia } from '@inertiajs/inertia';
+import { Link } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import DarkButton from '@/Partials/Layouts/DarkButton.vue';
 
 const isOpen = ref(false);
@@ -9,7 +9,7 @@ const isOpen = ref(false);
 const toggle = () => (isOpen.value = !isOpen.value);
 const close = () => (isOpen.value = false);
 const logout = () => {
-  Inertia.post(route('logout'));
+  router.post(route('logout'));
 };
 </script>
 

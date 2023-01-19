@@ -1,5 +1,5 @@
 <script setup>
-import { Head } from '@inertiajs/inertia-vue3';
+import { Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import OuterContainer from '@/Components/OuterContainer.vue';
 import InnerContainer from '@/Components/InnerContainer.vue';

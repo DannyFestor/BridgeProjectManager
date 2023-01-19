@@ -1,12 +1,13 @@
 <script setup>
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { Link, useForm, usePage } from '@inertiajs/inertia-vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import InputContainer from '@/Components/InputContainer.vue';
 
-const user = usePage().props.value.auth.user;
+// const user = usePage().props.value.auth.user;
+const user = usePage().props.auth.user;
 
 const form = useForm({
   user_name: user.user_name,

@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateEmailInformationForm from './Partials/UpdateEmailInformationForm.vue';
-import { Head } from '@inertiajs/inertia-vue3';
+import { Head } from '@inertiajs/vue3';
 import UpdateNameInformationForm from '@/Pages/Profile/Partials/UpdateNameInformationForm.vue';
 import OuterContainer from '@/Components/OuterContainer.vue';
 import InnerContainer from '@/Components/InnerContainer.vue';
@@ -40,7 +40,7 @@ const props = defineProps({
       </InnerContainer>
 
       <InnerContainer>
-        <DeleteUserForm class="max-w-xl" />
+        <DeleteUserForm />
       </InnerContainer>
     </OuterContainer>
   </AuthenticatedLayout>

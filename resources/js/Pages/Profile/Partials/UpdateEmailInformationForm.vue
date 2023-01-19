@@ -1,6 +1,6 @@
 <script setup>
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { Link, useForm, usePage } from '@inertiajs/inertia-vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import InputContainer from '@/Components/InputContainer.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -12,7 +12,8 @@ const props = defineProps({
   isVerifiedEmail: Boolean,
 });
 
-const user = usePage().props.value.auth.user;
+// const user = usePage().props.value.auth.user;
+const user = usePage().props.auth.user;
 
 const form = useForm({
   email: user.email,
