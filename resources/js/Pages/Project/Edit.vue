@@ -4,7 +4,7 @@ interface Props {
   project: ProjectWrap;
 }
 
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import OuterContainer from '@/Components/OuterContainer.vue';
 import InnerContainer from '@/Components/InnerContainer.vue';
@@ -17,6 +17,7 @@ import TextArea from '@/Components/TextArea.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { computed, ref } from 'vue';
 import Delete from '@/Pages/Project/Delete.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 
 const props = defineProps<Props>();
 
@@ -30,6 +31,9 @@ const form = useForm(<ProjectForm>{
     font: props.project.data.settings?.font ?? '#FFFFFF',
   },
 });
+
+const onCancel = () =>
+  router.get(route('projects.show', props.project.data.uuid));
 
 const onSubmit = () => {
   form.patch(route('projects.update', props.project.data.uuid), {});
@@ -156,6 +160,12 @@ const isDeleteOpen = ref<Boolean>(false);
               </p>
             </Transition>
 
+            <SecondaryButton
+              type="button"
+              :disabled="form.processing"
+              @click="onCancel"
+              >Cancel</SecondaryButton
+            >
             <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
           </div>
         </form>
