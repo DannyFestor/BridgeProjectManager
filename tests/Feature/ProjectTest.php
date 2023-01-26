@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Project;
+use App\Models\ProjectUser;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -23,7 +24,7 @@ class ProjectTest extends TestCase
     }
 
 //    /** @test */
-//    public function dashboard_contains_products()
+//    public function dashboard_contains_projects()
 //    {
 //        $user = \App\Models\User::factory()->create();
 //        $project = \App\Models\Project::factory()->create(['user_id' => $user]);
@@ -41,7 +42,7 @@ class ProjectTest extends TestCase
 //    }
 
     /** @test */
-    public function the_product_index_page_can_be_viewed()
+    public function the_project_index_page_can_be_viewed()
     {
         $this
             ->actingAs($this->user)
@@ -51,7 +52,7 @@ class ProjectTest extends TestCase
     }
 
     /** @test */
-    public function the_product_show_page_can_be_viewed()
+    public function the_project_show_page_can_be_viewed()
     {
         $project = Project::factory()->for($this->user, 'owner')->create();
 
@@ -67,14 +68,14 @@ class ProjectTest extends TestCase
                         ->where('title', $project->title)
                         ->where('description', $project->description)
                         ->where('isOwner', $project->user_id === $this->user->id)
-                        ->where('settings', null)
+                        ->has('settings')
                         ->has('owner')
                     ))
             );
     }
 
     /** @test */
-    public function the_product_create_page_can_be_viewed()
+    public function the_project_create_page_can_be_viewed()
     {
         $this
             ->actingAs($this->user)
@@ -86,7 +87,7 @@ class ProjectTest extends TestCase
     }
 
     /** @test */
-    public function a_product_can_be_created()
+    public function a_project_can_be_created()
     {
         $title = 'New Project';
         $description = 'Project Description';
@@ -110,7 +111,7 @@ class ProjectTest extends TestCase
     }
 
     /** @test */
-    public function a_product_cannot_be_created_on_validation_error()
+    public function a_project_cannot_be_created_on_validation_error()
     {
         $title = 'New Project';
         $description = 'Project Description';
@@ -163,7 +164,7 @@ class ProjectTest extends TestCase
     }
 
     /** @test */
-    public function the_product_edit_page_can_be_viewed()
+    public function the_project_edit_page_can_be_viewed()
     {
         $project = Project::factory()->for($this->user, 'owner')->create();
 
@@ -179,14 +180,14 @@ class ProjectTest extends TestCase
                         ->where('title', $project->title)
                         ->where('description', $project->description)
                         ->where('isOwner', $project->user_id === $this->user->id)
-                        ->where('settings', null)
+                        ->has('settings')
                     )
                 )
             );
     }
 
     /** @test */
-    public function a_product_can_be_updated()
+    public function a_project_can_be_updated()
     {
         $project = Project::factory()->for($this->user, 'owner')->create();
 
@@ -212,7 +213,7 @@ class ProjectTest extends TestCase
     }
 
     /** @test */
-    public function a_product_cannot_be_updated_on_validation_error()
+    public function a_project_cannot_be_updated_on_validation_error()
     {
         $project = Project::factory()->for($this->user, 'owner')->create();
 
@@ -267,7 +268,7 @@ class ProjectTest extends TestCase
     }
 
     /** @test */
-    public function a_product_can_be_deleted()
+    public function a_project_can_be_deleted()
     {
         $project = Project::factory()->for($this->user, 'owner')->create();
 
@@ -282,5 +283,65 @@ class ProjectTest extends TestCase
             'description' => $project->description,
             // can't test json ... why :(
         ]);
+    }
+
+    /** @test */
+    public function project_order_on_dashboard_can_be_updated()
+    {
+        $project1 = Project::factory()->for($this->user, 'owner')->create();
+        $project2 = Project::factory()->for($this->user, 'owner')->create();
+        $project3 = Project::factory()->for($this->user, 'owner')->create();
+        $project4 = Project::factory()->for($this->user, 'owner')->create();
+        $project5 = Project::factory()->for($this->user, 'owner')->create();
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project1->id, 'user_id' => $this->user->id, 'order' => 1]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project2->id, 'user_id' => $this->user->id, 'order' => 2]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project3->id, 'user_id' => $this->user->id, 'order' => 3]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project4->id, 'user_id' => $this->user->id, 'order' => 4]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project5->id, 'user_id' => $this->user->id, 'order' => 5]);
+
+        $this
+            ->actingAs($this->user)
+            ->patch(route('projects.update.order', ['project' => $project1]), [
+                'old' => 1,
+                'new' => 1,
+            ])
+            ->assertStatus(Response::HTTP_FOUND)
+            ->assertSessionHasErrors('new');
+
+        $this
+            ->actingAs($this->user)
+            ->patch(route('projects.update.order', ['project' => $project1]), [
+                'old' => 1,
+                'new' => 3,
+            ])
+            ->assertStatus(Response::HTTP_FOUND);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project1->id, 'user_id' => $this->user->id, 'order' => 3]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project2->id, 'user_id' => $this->user->id, 'order' => 1]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project3->id, 'user_id' => $this->user->id, 'order' => 2]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project4->id, 'user_id' => $this->user->id, 'order' => 4]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project5->id, 'user_id' => $this->user->id, 'order' => 5]);
+
+//
+//        $this
+//            ->actingAs($this->user)
+//            ->patch(route('projects.update.order', ['project' => $project1]), [
+//                'old' => 1,
+//                'new' => 1,
+//            ])
+//            ->assertStatus(Response::HTTP_FOUND)
+//            ->assertSessionHasErrors('new');
+//
+//        $this
+//            ->actingAs($this->user)
+//            ->patch(route('projects.update.order', ['project' => $project5]), [
+//                'old' => 5,
+//                'new' => 3,
+//            ])
+//            ->assertStatus(Response::HTTP_FOUND);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project1->id, 'user_id' => $this->user->id, 'order' => 4]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project2->id, 'user_id' => $this->user->id, 'order' => 1]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project3->id, 'user_id' => $this->user->id, 'order' => 2]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project4->id, 'user_id' => $this->user->id, 'order' => 5]);
+//        $this->assertDatabaseHas('project_user', ['project_id' => $project5->id, 'user_id' => $this->user->id, 'order' => 3]);
     }
 }

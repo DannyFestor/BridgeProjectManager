@@ -6,6 +6,7 @@ use App\Http\Requests\Project\StoreRequest;
 use App\Http\Requests\Project\UpdateRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use App\Models\ProjectUser;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
