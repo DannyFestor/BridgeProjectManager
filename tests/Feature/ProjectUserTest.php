@@ -173,4 +173,248 @@ class ProjectUserTest extends TestCase
             ->assertStatus(Response::HTTP_FORBIDDEN);
         $this->assertDatabaseHas('projects', $project4->only(['uuid']));
     }
+
+    /** @test */
+    public function an_owner_can_remove_user_from_project()
+    {
+        $this->first_project->users()->attach($this->second_user);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->second_user->id,
+            'project_id' => $this->first_project->id,
+        ]);
+
+        $this
+            ->actingAs($this->first_user)
+            ->delete(route('projects.users.destroy', ['project' => $this->first_project, 'user' => $this->second_user]))
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseMissing('project_user', [
+            'user_id' => $this->second_user->id,
+            'project_id' => $this->first_project->id,
+        ]);
+    }
+
+    /** @test */
+    public function a_manager_can_remove_user_from_project()
+    {
+        $third_user = \App\Models\User::factory()->create();
+        $this->first_project->users()->attach($this->second_user, ['is_manager' => true]);
+        $this->first_project->users()->attach($third_user);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->first_user->id,
+            'project_id' => $this->first_project->id,
+        ]);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->second_user->id,
+            'project_id' => $this->first_project->id,
+        ]);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $third_user->id,
+            'project_id' => $this->first_project->id,
+        ]);
+
+        $this
+            ->actingAs($this->second_user)
+            ->delete(route('projects.users.destroy', ['project' => $this->first_project, 'user' => $third_user]))
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseMissing('project_user', [
+            'user_id' => $third_user->id,
+            'project_id' => $this->first_project->id,
+        ]);
+    }
+
+    /** @test */
+    public function an_owner_cannot_be_removed_from_project()
+    {
+        $this->first_project->users()->attach($this->second_user, ['is_manager' => true]);
+
+        $this
+            ->actingAs($this->second_user)
+            ->delete(route('projects.users.destroy', ['project' => $this->first_project, 'user' => $this->first_user]))
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->first_user->id,
+            'project_id' => $this->first_project->id,
+        ]);
+
+        $this
+            ->actingAs($this->first_user)
+            ->delete(route('projects.users.destroy', ['project' => $this->first_project, 'user' => $this->first_user]))
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->first_user->id,
+            'project_id' => $this->first_project->id,
+        ]);
+    }
+
+    /** @test */
+    public function an_owner_can_promote_user_to_manager()
+    {
+        $this->first_project->users()->attach($this->second_user);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->second_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => FALSE,
+        ]);
+
+        $this
+            ->actingAs($this->first_user)
+            ->patch(
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->second_user]),
+                ['is_manager' => true,]
+            )
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->second_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => TRUE,
+        ]);
+    }
+
+    /** @test */
+    public function a_manager_can_promote_user_to_manager()
+    {
+        $third_user = User::factory()->create();
+        $this->first_project->users()->attach($this->second_user, ['is_manager' => true]);
+        $this->first_project->users()->attach($third_user, ['is_manager' => false]);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $third_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => FALSE,
+        ]);
+
+        $this
+            ->actingAs($this->second_user)
+            ->patch(
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $third_user]),
+                ['is_manager' => true,]
+            )
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $third_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => TRUE,
+        ]);
+    }
+
+    /** @test */
+    public function a_user_cannot_promote_user_to_manager()
+    {
+        $third_user = User::factory()->create();
+        $this->first_project->users()->attach($this->second_user, ['is_manager' => false]);
+        $this->first_project->users()->attach($third_user, ['is_manager' => false]);
+
+        $this
+            ->actingAs($this->second_user)
+            ->patch(
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $third_user]),
+                ['is_manager' => true,]
+            )
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseMissing('project_user', [
+            'user_id' => $third_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => TRUE,
+        ]);
+    }
+
+    /** @test */
+    public function a_user_must_belong_to_board_for_promotion()
+    {
+        $third_user = User::factory()->create();
+        $this->first_project->users()->attach($this->second_user, ['is_manager' => false]);
+
+        $this
+            ->actingAs($this->second_user)
+            ->patch(
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $third_user]),
+                ['is_manager' => true,]
+            )
+            ->assertStatus(Response::HTTP_NOT_FOUND);
+        $this->assertDatabaseMissing('project_user', [
+            'user_id' => $third_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => TRUE,
+        ]);
+    }
+
+    /** @test */
+    public function an_owner_cannot_be_demoted_from_manager()
+    {
+        $this->first_project->users()->attach($this->second_user, ['is_manager' => true]);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->second_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => TRUE,
+        ]);
+
+        $this
+            ->actingAs($this->second_user)
+            ->patch(
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->first_user]),
+                ['is_manager' => false,]
+            )
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->first_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => TRUE,
+        ]);
+
+        $this
+            ->actingAs($this->first_user)
+            ->patch(
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->first_user]),
+                ['is_manager' => false,]
+            )
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->first_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => TRUE,
+        ]);
+    }
+
+    /** @test */
+    public function a_manager_can_be_demoted()
+    {
+        $third_user = User::factory()->create();
+        $this->first_project->users()->attach($this->second_user, ['is_manager' => true]);
+        $this->first_project->users()->attach($third_user, ['is_manager' => true]);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->second_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => TRUE,
+        ]);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $third_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => TRUE,
+        ]);
+
+        $this
+            ->actingAs($this->second_user)
+            ->patch(
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $third_user]),
+                ['is_manager' => false,]
+            )
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $third_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => FALSE,
+        ]);
+
+        $this
+            ->actingAs($this->first_user)
+            ->patch(
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->second_user]),
+                ['is_manager' => false,]
+            )
+            ->assertStatus(Response::HTTP_FOUND);
+        $this->assertDatabaseHas('project_user', [
+            'user_id' => $this->second_user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => FALSE,
+        ]);
+    }
 }
