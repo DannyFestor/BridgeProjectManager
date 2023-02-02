@@ -71,6 +71,7 @@ class ProjectController extends Controller
 
         return Inertia::render('Project/Show', [
             'project' => ProjectResource::make($project),
+            'can_update' => $user->can('update', $project),
         ]);
     }
 
@@ -85,12 +86,14 @@ class ProjectController extends Controller
     public function edit(Request $request, Project $project): Response
     {
         $user = $request->user();
-        if(!$user->can('view', $project)) {
+        $canUpdate = $user->can('update', $project);
+        if(!$canUpdate) {
             abort(404);
         }
 
         return Inertia::render('Project/Edit', [
             'project' => ProjectResource::make($project),
+            'can_update' => $canUpdate,
         ]);
     }
 

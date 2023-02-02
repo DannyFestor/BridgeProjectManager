@@ -42,9 +42,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/{project:uuid}/edit', [\App\Http\Controllers\ProjectController::class, 'edit'])->name('edit');
         Route::patch('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'update'])->name('update');
         Route::delete('/{project:uuid}', [\App\Http\Controllers\ProjectController::class, 'destroy'])->name('destroy');
-        Route::patch('/{project:uuid}', \App\Http\Controllers\Project\UpdateOrderController::class)->name('update.order');
+        Route::patch('/{project:uuid}/order', \App\Http\Controllers\Project\UpdateOrderController::class)->name('update.order');
 
         Route::group(['prefix' => '{project:uuid}/users', 'as' => 'users.'], function () {
+            Route::get('/', [\App\Http\Controllers\ProjectUserController::class, 'show'])->name('show');
             Route::patch('/{user:uuid}/manager', [\App\Http\Controllers\ProjectUserController::class, 'updateIsManager'])->name('update.manager');
             Route::delete('/{user:uuid}', [\App\Http\Controllers\ProjectUserController::class, 'destroy'])->name('destroy');
         });
