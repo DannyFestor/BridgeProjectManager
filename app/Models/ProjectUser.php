@@ -18,6 +18,7 @@ class ProjectUser extends Pivot
         'is_manager',
         'settings',
     ];
+    protected $casts = ['is_manager' => 'boolean'];
 
     protected static function booted()
     {

@@ -41,6 +41,7 @@ class ProjectPolicy
 
     public function delete(User $user, Project $project): bool
     {
+        return $project->user_id === $user->id;
     }
 
     public function restore(User $user, Project $project): bool

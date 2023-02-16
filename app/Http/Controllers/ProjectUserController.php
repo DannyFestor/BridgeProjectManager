@@ -3,13 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProjectUser\UpdateIsManagerRequest;
+use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use App\Models\ProjectUser;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ProjectUserController extends Controller
 {
+    public function show(Request $request, Project $project)
+    {
+        $user = $request->user();
+        $canUpdate = $user->can('update', $project);
+        if(!$canUpdate) {
+            abort(403);
+        }
+
+        return Inertia::render('ProjectUser/Show', [
+            'project' => ProjectResource::make($project),
+            'users' => $project->users()
+                ->select([
+                    'users.id',
+                    'users.uuid',
+                    'users.email',
+                    'users.user_name',
+                    'users.name',
+                    'project_user.is_manager'
+                ])
+                ->get()
+                ->map(fn (User $user) => [
+                    'uuid' => $user->uuid,
+                    'email' => $user->email,
+                    'name' => $user->name,
+                    'user_name' => $user->user_name,
+                    'is_manager' => !!$user->is_manager,
+                    'is_owner' => $user->id === $project->user_id,
+                ])
+                ->toArray(),
+            'can_update' => $canUpdate,
+        ]);
+    }
+
     public function updateIsManager(UpdateIsManagerRequest $request, Project $project, User $user)
     {
         if(!$request->user()->can('update', $project) || $project->user_id === $user->id) {

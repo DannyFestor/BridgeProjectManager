@@ -128,7 +128,7 @@ class ProjectController extends Controller
     public function destroy(Request $request, Project $project): RedirectResponse
     {
         $user = $request->user();
-        if(!$user->can('update', $project)) {
+        if(!$user->can('delete', $project)) {
             abort(403);
         }
         $project->delete();

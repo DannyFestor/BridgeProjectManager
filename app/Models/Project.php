@@ -54,6 +54,6 @@ class Project extends Model
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, ProjectUser::class);
+        return $this->belongsToMany(User::class, ProjectUser::class)->withPivot(['is_manager']);
     }
 }
