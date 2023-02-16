@@ -16,9 +16,9 @@ import InputError from '@/Components/InputError.vue';
 import TextArea from '@/Components/TextArea.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { computed, ref } from 'vue';
-import Delete from '@/Pages/Project/Delete.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { AuthUser } from '@/Types/User';
+import Leave from '@/Pages/ProjectUser/Leave.vue';
 
 const props = defineProps<Props>();
 
@@ -50,13 +50,20 @@ const preview = computed(
     `linear-gradient(${form.settings.direction}deg, ${form.settings.from}, ${form.settings.to})`
 );
 
-const isDeleteOpen = ref<Boolean>(false);
+const isLeaveOpen = ref<Boolean>(false);
 </script>
 
 <template>
   <Head title="Update Project Options" />
 
   <AuthenticatedLayout>
+    <Leave
+      v-if="!props.project.data.isOwner"
+      :is-open="isLeaveOpen"
+      @modal-open="isLeaveOpen = true"
+      @modal-close="isLeaveOpen = false"
+    />
+
     <OuterContainer>
       <InnerContainer>
         <ContainerHeader>

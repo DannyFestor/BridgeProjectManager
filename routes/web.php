@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{user:uuid}/edit', [\App\Http\Controllers\ProjectUserController::class, 'edit'])->name('edit');
             Route::patch('/{user:uuid}/options', [\App\Http\Controllers\ProjectUserController::class, 'update'])->name('update');
             Route::patch('/{user:uuid}/manager', [\App\Http\Controllers\ProjectUserController::class, 'updateIsManager'])->name('update.manager');
+            Route::delete('/{user:uuid}/leave', [\App\Http\Controllers\ProjectUserController::class, 'leave'])->name('leave');
             Route::delete('/{user:uuid}', [\App\Http\Controllers\ProjectUserController::class, 'destroy'])->name('destroy');
         });
     });

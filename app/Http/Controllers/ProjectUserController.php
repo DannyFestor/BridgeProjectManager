@@ -92,6 +92,17 @@ class ProjectUserController extends Controller
         return redirect()->back()->with('success', 'Project was updated.');
     }
 
+    public function leave(Request $request, Project $project, User $user)
+    {
+        if($request->user()->id !== $user->id && $project->user_id !== $user->id) {
+            abort(403);
+        }
+
+        $project->users()->detach($user);
+
+        return redirect()->route('dashboard')->with('success', 'Left Board');
+    }
+
     public function destroy(Request $request, Project $project, User $user)
     {
         if(!$request->user()->can('update', $project) || $project->user_id === $user->id) {
