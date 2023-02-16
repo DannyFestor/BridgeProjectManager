@@ -45,10 +45,10 @@ const onMoved = (uuid: String, oldIndex: Number, newIndex: Number) => {
         <template #item="{ element }">
           <ProjectCard
             :uuid="element.uuid"
-            :color="element.settings?.font"
-            :direction="element.settings?.direction"
-            :from="element.settings?.from"
-            :to="element.settings?.to"
+            :color="element.pivot?.settings?.font"
+            :direction="element.pivot?.settings?.direction"
+            :from="element.pivot?.settings?.from"
+            :to="element.pivot?.settings?.to"
             :is-owner="element.isOwner"
           >
             {{ element.title }}

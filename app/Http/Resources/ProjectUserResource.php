@@ -18,7 +18,7 @@ class ProjectUserResource extends JsonResource
         return [
             'is_favorite' => $this->is_favorite,
             'is_manager' => $this->is_manager,
-            'settings' => $this->settings,
+            'settings' => json_decode($this->settings),
             'project' => new ProjectResource($this->whenLoaded('project')),
             'user' => new UserResource($this->whenLoaded('user')),
         ];

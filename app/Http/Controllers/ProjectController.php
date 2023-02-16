@@ -68,7 +68,7 @@ class ProjectController extends Controller
         }
 
         $project->load('owner');
-
+        
         return Inertia::render('Project/Show', [
             'project' => ProjectResource::make($project),
             'can_update' => $user->can('update', $project),

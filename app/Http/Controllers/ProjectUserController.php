@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProjectUser\UpdateIsManagerRequest;
+use App\Http\Requests\ProjectUser\UpdateOptions;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use App\Models\ProjectUser;
@@ -43,6 +44,38 @@ class ProjectUserController extends Controller
                 ->toArray(),
             'can_update' => $canUpdate,
         ]);
+    }
+
+    public function edit(Request $request, Project $project, User $user)
+    {
+        if ($user->uuid !== $request->user()->uuid) {
+            abort(403);
+        }
+        $canUpdate = $user->can('update', $project);
+        $projectUser = ProjectUser::query()
+            ->select('settings')
+            ->where('user_id', $user->id)
+            ->where('project_id', $project->id)
+            ->first();
+        $project->settings = $projectUser->settings;
+
+        return Inertia::render('ProjectUser/Edit', [
+            'project' => ProjectResource::make($project),
+            'can_update' => $canUpdate,
+        ]);
+    }
+
+    public function update(UpdateOptions $request, Project $project, User $user)
+    {
+        if($request->user()->uuid !== $user->uuid) {
+            abort(403);
+        }
+        ProjectUser::query()
+            ->where('project_id', '=', $project->id)
+            ->where('user_id', '=', $user->id)
+            ->update($request->validated());
+
+        return redirect()->back()->with('success', 'Project was updated.');
     }
 
     public function updateIsManager(UpdateIsManagerRequest $request, Project $project, User $user)

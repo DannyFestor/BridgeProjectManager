@@ -46,6 +46,8 @@ Route::middleware('auth')->group(function () {
 
         Route::group(['prefix' => '{project:uuid}/users', 'as' => 'users.'], function () {
             Route::get('/', [\App\Http\Controllers\ProjectUserController::class, 'show'])->name('show');
+            Route::get('/{user:uuid}/edit', [\App\Http\Controllers\ProjectUserController::class, 'edit'])->name('edit');
+            Route::patch('/{user:uuid}/options', [\App\Http\Controllers\ProjectUserController::class, 'update'])->name('update');
             Route::patch('/{user:uuid}/manager', [\App\Http\Controllers\ProjectUserController::class, 'updateIsManager'])->name('update.manager');
             Route::delete('/{user:uuid}', [\App\Http\Controllers\ProjectUserController::class, 'destroy'])->name('destroy');
         });
