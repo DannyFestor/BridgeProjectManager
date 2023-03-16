@@ -17,12 +17,11 @@ use Laravel\Sanctum\HasApiTokens;
 /**
  * @property string $uuid
  * @property string $avatar
+ * @property bool $is_manager
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, HasUUID;
-
-    public mixed $is_manager;
 
     /**
      * The attributes that are mass assignable.
