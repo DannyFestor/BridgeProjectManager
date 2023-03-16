@@ -66,7 +66,7 @@ class ProjectUserTest extends TestCase
     }
 
     /** @test */
-    public function an_owner_can_update_a_board()
+    public function an_owner_can_update_a_project()
     {
         $attributes1 = [
             'title' => 'New Title',
@@ -91,7 +91,7 @@ class ProjectUserTest extends TestCase
     }
 
     /** @test */
-    public function a_manager_can_update_a_board()
+    public function a_manager_can_update_a_project()
     {
         // Case 1: is owner, is manager
         $attributes1 = [
@@ -143,7 +143,7 @@ class ProjectUserTest extends TestCase
     }
 
     /** @test */
-    public function a_manager_can_delete_a_board()
+    public function a_manager_cannot_delete_a_project()
     {
         $this
             ->actingAs($this->first_user)
@@ -155,8 +155,8 @@ class ProjectUserTest extends TestCase
         $this
             ->actingAs($this->first_user)
             ->delete(route('projects.destroy', $this->second_project))
-            ->assertStatus(Response::HTTP_FOUND);
-        $this->assertDatabaseMissing('projects', $this->second_project->only(['uuid']));
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseHas('projects', $this->second_project->only(['uuid']));
 
         $project3 = Project::factory()->for($this->second_user, 'owner')->create();
         $project3->users()->attach($this->first_user, ['is_manager' => false]);
@@ -253,20 +253,20 @@ class ProjectUserTest extends TestCase
         $this->assertDatabaseHas('project_user', [
             'user_id' => $this->second_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => FALSE,
+            'is_manager' => false,
         ]);
 
         $this
             ->actingAs($this->first_user)
             ->patch(
                 route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->second_user]),
-                ['is_manager' => true,]
+                ['is_manager' => true]
             )
             ->assertStatus(Response::HTTP_FOUND);
         $this->assertDatabaseHas('project_user', [
             'user_id' => $this->second_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => TRUE,
+            'is_manager' => true,
         ]);
     }
 
@@ -279,20 +279,20 @@ class ProjectUserTest extends TestCase
         $this->assertDatabaseHas('project_user', [
             'user_id' => $third_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => FALSE,
+            'is_manager' => false,
         ]);
 
         $this
             ->actingAs($this->second_user)
             ->patch(
                 route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $third_user]),
-                ['is_manager' => true,]
+                ['is_manager' => true]
             )
             ->assertStatus(Response::HTTP_FOUND);
         $this->assertDatabaseHas('project_user', [
             'user_id' => $third_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => TRUE,
+            'is_manager' => true,
         ]);
     }
 
@@ -307,13 +307,13 @@ class ProjectUserTest extends TestCase
             ->actingAs($this->second_user)
             ->patch(
                 route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $third_user]),
-                ['is_manager' => true,]
+                ['is_manager' => true]
             )
             ->assertStatus(Response::HTTP_FORBIDDEN);
         $this->assertDatabaseMissing('project_user', [
             'user_id' => $third_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => TRUE,
+            'is_manager' => true,
         ]);
     }
 
@@ -327,13 +327,13 @@ class ProjectUserTest extends TestCase
             ->actingAs($this->second_user)
             ->patch(
                 route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $third_user]),
-                ['is_manager' => true,]
+                ['is_manager' => true]
             )
             ->assertStatus(Response::HTTP_NOT_FOUND);
         $this->assertDatabaseMissing('project_user', [
             'user_id' => $third_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => TRUE,
+            'is_manager' => true,
         ]);
     }
 
@@ -344,33 +344,33 @@ class ProjectUserTest extends TestCase
         $this->assertDatabaseHas('project_user', [
             'user_id' => $this->second_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => TRUE,
+            'is_manager' => true,
         ]);
 
         $this
             ->actingAs($this->second_user)
             ->patch(
                 route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->first_user]),
-                ['is_manager' => false,]
+                ['is_manager' => false]
             )
             ->assertStatus(Response::HTTP_FORBIDDEN);
         $this->assertDatabaseHas('project_user', [
             'user_id' => $this->first_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => TRUE,
+            'is_manager' => true,
         ]);
 
         $this
             ->actingAs($this->first_user)
             ->patch(
                 route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->first_user]),
-                ['is_manager' => false,]
+                ['is_manager' => false]
             )
             ->assertStatus(Response::HTTP_FORBIDDEN);
         $this->assertDatabaseHas('project_user', [
             'user_id' => $this->first_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => TRUE,
+            'is_manager' => true,
         ]);
     }
 
@@ -383,38 +383,38 @@ class ProjectUserTest extends TestCase
         $this->assertDatabaseHas('project_user', [
             'user_id' => $this->second_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => TRUE,
+            'is_manager' => true,
         ]);
         $this->assertDatabaseHas('project_user', [
             'user_id' => $third_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => TRUE,
+            'is_manager' => true,
         ]);
 
         $this
             ->actingAs($this->second_user)
             ->patch(
                 route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $third_user]),
-                ['is_manager' => false,]
+                ['is_manager' => false]
             )
             ->assertStatus(Response::HTTP_FOUND);
         $this->assertDatabaseHas('project_user', [
             'user_id' => $third_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => FALSE,
+            'is_manager' => false,
         ]);
 
         $this
             ->actingAs($this->first_user)
             ->patch(
                 route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->second_user]),
-                ['is_manager' => false,]
+                ['is_manager' => false]
             )
             ->assertStatus(Response::HTTP_FOUND);
         $this->assertDatabaseHas('project_user', [
             'user_id' => $this->second_user->id,
             'project_id' => $this->first_project->id,
-            'is_manager' => FALSE,
+            'is_manager' => false,
         ]);
     }
 }

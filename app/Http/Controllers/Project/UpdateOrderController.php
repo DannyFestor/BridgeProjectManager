@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Project;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Project\UpdateRequest;
 use App\Http\Requests\ProjectUser\UpdateOrderRequest;
 use App\Models\Project;
 use App\Models\ProjectUser;
@@ -12,14 +11,6 @@ use Illuminate\Http\RedirectResponse;
 
 class UpdateOrderController extends Controller
 {
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param UpdateRequest $request
-     * @param Project       $project
-     *
-     * @return RedirectResponse
-     */
     public function __invoke(UpdateOrderRequest $request, Project $project): RedirectResponse
     {
         $user = $request->user();
@@ -27,7 +18,7 @@ class UpdateOrderController extends Controller
             ->where('user_id', $user->id)
             ->where('project_id', $project->id)
             ->exists();
-        if (!$canUpdate) {
+        if (! $canUpdate) {
             abort(404);
         }
 
@@ -41,11 +32,11 @@ class UpdateOrderController extends Controller
             ->where('project_id', '!=', $project->id)
             ->when(
                 $request->get('old') < $request->get('new'),
-                fn(Builder $query) => $query
+                fn (Builder $query) => $query
                     ->where('order', '>=', $request->get('old'))
                     ->where('order', '<=', $request->get('new'))
                     ->decrement('order'),
-                fn(Builder $query) => $query
+                fn (Builder $query) => $query
                     ->where('order', '>=', $request->get('new'))
                     ->where('order', '<=', $request->get('old'))
                     ->increment('order'),

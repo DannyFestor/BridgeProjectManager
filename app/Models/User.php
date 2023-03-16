@@ -22,6 +22,8 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, HasUUID;
 
+    public mixed $is_manager;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -78,16 +80,13 @@ class User extends Authenticatable implements MustVerifyEmail
         );
     }
 
-    /**
-     * @return HasMany
-     */
     public function ownedProjects(): HasMany
     {
         return $this->hasMany(Project::class);
     }
 
     /**
-     * @return BelongsToMany
+     * @return BelongsToMany<Project>
      */
     public function projects(): BelongsToMany
     {

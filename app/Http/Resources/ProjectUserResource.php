@@ -8,12 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin \App\Models\ProjectUser */
 class ProjectUserResource extends JsonResource
 {
-    /**
-     * @param Request $request
-     *
-     * @return array
-     */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'is_favorite' => $this->is_favorite,

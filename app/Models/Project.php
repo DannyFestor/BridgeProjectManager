@@ -41,17 +41,11 @@ class Project extends Model
         });
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * @return BelongsToMany
-     */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, ProjectUser::class)->withPivot(['is_manager']);

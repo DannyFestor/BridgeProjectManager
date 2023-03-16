@@ -4,13 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Support\Str;
 
 class ProjectUser extends Pivot
 {
     public $incrementing = false;
+
     public $timestamps = false;
+
     protected $table = 'project_user';
+
     protected $fillable = [
         'project_id',
         'user_id',
@@ -18,6 +20,7 @@ class ProjectUser extends Pivot
         'is_manager',
         'settings',
     ];
+
     protected $casts = ['is_manager' => 'boolean'];
 
     protected static function booted()
@@ -31,17 +34,11 @@ class ProjectUser extends Pivot
         });
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

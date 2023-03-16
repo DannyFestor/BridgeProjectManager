@@ -6,13 +6,16 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRequest extends FormRequest
 {
-    public function prepareForValidation()
+    public function prepareForValidation(): void
     {
         $this->merge([
             'settings' => json_encode($this->settings),
         ]);
     }
 
+    /**
+     * @return array<string, array<int, string>>
+     */
     public function rules(): array
     {
         return [

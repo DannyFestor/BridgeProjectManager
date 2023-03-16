@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('project_user', function (Blueprint $table) {
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->boolean('is_favorite')->default(FALSE);
-            $table->boolean('is_manager')->default(FALSE);
+            $table->boolean('is_favorite')->default(false);
+            $table->boolean('is_manager')->default(false);
             $table->json('settings')->nullable();
             $table->unique(['project_id', 'user_id']);
         });
