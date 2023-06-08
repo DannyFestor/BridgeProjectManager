@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { ProjectUser } from '@/Types/ProjectUser';
-import { Head, useForm, Link } from '@inertiajs/vue3';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { ProjectWrap } from '@/Types/Project';
+
+import { Head, useForm, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import OuterContainer from '@/Components/OuterContainer.vue';
 import InnerContainer from '@/Components/InnerContainer.vue';
 import ContainerHeader from '@/Components/ContainerHeader.vue';
 import Delete from './Delete.vue';
-import { ProjectWrap } from '@/Types/Project';
-import { computed } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import UserList from '@/Partials/ProjectUser/UserList.vue';
+import Invite from '@/Components/ProjectUser/Invite.vue';
 
 interface IProps {
   users: ProjectUser[];
   project: ProjectWrap;
+  flash: {
+    error: string;
+    success: string;
+  };
 }
 
 const props = defineProps<IProps>();
@@ -34,6 +38,14 @@ const users = computed<ProjectUser[]>(() => {
     (user) => user.is_manager === false && user.is_owner === false
   );
 });
+
+watch(
+  () => props.flash,
+  (value) => {
+    // todo: if value.success
+    // todo: if value.error
+  }
+);
 </script>
 
 <template>
@@ -44,6 +56,8 @@ const users = computed<ProjectUser[]>(() => {
         User Control
         <template #subtitle> Add or Remove Users </template>
       </ContainerHeader>
+
+      <Invite :project="props.project"></Invite>
 
       <div
         class="flex flex-col space-y-8 divide-y-2 divide-slate-800 dark:divide-slate-100"

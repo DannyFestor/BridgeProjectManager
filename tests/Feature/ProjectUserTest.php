@@ -2,10 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ProjectUserInviteMail;
 use App\Models\Project;
+use App\Models\ProjectUser;
+use App\Models\ProjectUserInvite;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class ProjectUserTest extends TestCase
@@ -37,8 +41,14 @@ class ProjectUserTest extends TestCase
         $this->first_user->projects()->attach($this->second_project->id);
 
         $this->assertEquals($this->first_user->projects()->count(), 2);
-        $this->assertDatabaseHas('project_user', ['project_id' => $this->first_project->id, 'user_id' => $this->first_user->id]);
-        $this->assertDatabaseHas('project_user', ['project_id' => $this->second_project->id, 'user_id' => $this->first_user->id]);
+        $this->assertDatabaseHas(
+            'project_user',
+            ['project_id' => $this->first_project->id, 'user_id' => $this->first_user->id]
+        );
+        $this->assertDatabaseHas(
+            'project_user',
+            ['project_id' => $this->second_project->id, 'user_id' => $this->first_user->id]
+        );
     }
 
     /** @test */
@@ -47,8 +57,14 @@ class ProjectUserTest extends TestCase
         $this->first_project->users()->attach($this->second_user->id);
 
         $this->assertEquals($this->first_project->users()->count(), 2);
-        $this->assertDatabaseHas('project_user', ['project_id' => $this->first_project->id, 'user_id' => $this->first_user->id]);
-        $this->assertDatabaseHas('project_user', ['project_id' => $this->first_project->id, 'user_id' => $this->second_user->id]);
+        $this->assertDatabaseHas(
+            'project_user',
+            ['project_id' => $this->first_project->id, 'user_id' => $this->first_user->id]
+        );
+        $this->assertDatabaseHas(
+            'project_user',
+            ['project_id' => $this->first_project->id, 'user_id' => $this->second_user->id]
+        );
     }
 
     /** @test */
@@ -259,7 +275,8 @@ class ProjectUserTest extends TestCase
         $this
             ->actingAs($this->first_user)
             ->patch(
-                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->second_user]),
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->second_user]
+                ),
                 ['is_manager' => true]
             )
             ->assertStatus(Response::HTTP_FOUND);
@@ -350,7 +367,8 @@ class ProjectUserTest extends TestCase
         $this
             ->actingAs($this->second_user)
             ->patch(
-                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->first_user]),
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->first_user]
+                ),
                 ['is_manager' => false]
             )
             ->assertStatus(Response::HTTP_FORBIDDEN);
@@ -363,7 +381,8 @@ class ProjectUserTest extends TestCase
         $this
             ->actingAs($this->first_user)
             ->patch(
-                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->first_user]),
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->first_user]
+                ),
                 ['is_manager' => false]
             )
             ->assertStatus(Response::HTTP_FORBIDDEN);
@@ -407,7 +426,8 @@ class ProjectUserTest extends TestCase
         $this
             ->actingAs($this->first_user)
             ->patch(
-                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->second_user]),
+                route('projects.users.update.manager', ['project' => $this->first_project, 'user' => $this->second_user]
+                ),
                 ['is_manager' => false]
             )
             ->assertStatus(Response::HTTP_FOUND);
@@ -416,5 +436,211 @@ class ProjectUserTest extends TestCase
             'project_id' => $this->first_project->id,
             'is_manager' => false,
         ]);
+    }
+
+
+    /** @test */
+    public function an_owner_can_invite_user_to_project()
+    {
+        Mail::fake();
+
+        // if not a user already
+        // create ProjectUserInvite
+        // send invitation
+        $email = 'unregistered@test.com';
+        $this->assertDatabaseMissing('project_user_invite', [
+            'email' => $email,
+            'project_id' => $this->first_project->id,
+        ]);
+        $this
+            ->actingAs($this->first_user)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND)
+            ->assertSessionHas('success');
+        $this->assertDatabaseHas(
+            'project_user_invite',
+            ['project_id' => $this->first_project->id, 'user_id' => null, 'email' => $email]
+        );
+        Mail::assertQueued(ProjectUserInviteMail::class, function (ProjectUserInviteMail $mail) use ($email) {
+            return $mail->hasTo($email);
+        });
+        // If already invited, reject
+        $this
+            ->actingAs($this->first_user)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND)
+            ->assertSessionHas('error');
+
+        // else
+        $email = $this->second_user->email;
+        $this->assertDatabaseMissing('project_user_invite', [
+            'email' => $email,
+            'project_id' => $this->first_project->id,
+        ]);
+        $this
+            ->actingAs($this->first_user)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND);
+        // if user not part of board, send invitation, create ProjectUserInvite
+        // send invitation
+        // send mail to user
+        $this->assertDatabaseHas(
+            'project_user_invite',
+            ['project_id' => $this->first_project->id, 'user_id' => $this->second_user->id, 'email' => $email]
+        );
+        Mail::assertQueued(ProjectUserInviteMail::class, function (ProjectUserInviteMail $mail) use ($email) {
+            return $mail->hasTo($email);
+        });
+        // if user already invited, reject
+        $this
+            ->actingAs($this->first_user)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND)
+            ->assertSessionHas('error');
+
+        // if user part of board, reject
+        $this->assertDatabaseMissing('project_user', [
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ]);
+        ProjectUserInvite::where([
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ])->delete();
+        $this->assertDatabaseMissing('project_user_invite', [
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ]);
+        ProjectUser::create([
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ]);
+        $this->assertDatabaseHas('project_user', [
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ]);
+        $this
+            ->actingAs($this->first_user)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND)
+            ->assertSessionHas('error');
+    }
+
+    /** @test */
+    public function a_manager_can_invite_user_to_project()
+    {
+        $manager = User::factory()->create();
+        ProjectUser::create([
+            'user_id' => $manager->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => true,
+        ]);
+        Mail::fake();
+
+        // if not a user already
+        // create ProjectUserInvite
+        // send invitation
+        $email = 'unregistered@test.com';
+        $this->assertDatabaseMissing('project_user_invite', [
+            'email' => $email,
+            'project_id' => $this->first_project->id,
+        ]);
+        $this
+            ->actingAs($manager)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND)
+            ->assertSessionHas('success');
+        $this->assertDatabaseHas(
+            'project_user_invite',
+            ['project_id' => $this->first_project->id, 'user_id' => null, 'email' => $email]
+        );
+        Mail::assertQueued(ProjectUserInviteMail::class, function (ProjectUserInviteMail $mail) use ($email) {
+            return $mail->hasTo($email);
+        });
+        // If already invited, reject
+        $this
+            ->actingAs($manager)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND)
+            ->assertSessionHas('error');
+
+        // else
+        $email = $this->second_user->email;
+        $this->assertDatabaseMissing('project_user_invite', [
+            'email' => $email,
+            'project_id' => $this->first_project->id,
+        ]);
+        $this
+            ->actingAs($manager)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND);
+        // if user not part of board, send invitation, create ProjectUserInvite
+        // send invitation
+        // send mail to user
+        $this->assertDatabaseHas(
+            'project_user_invite',
+            ['project_id' => $this->first_project->id, 'user_id' => $this->second_user->id, 'email' => $email]
+        );
+        Mail::assertQueued(ProjectUserInviteMail::class, function (ProjectUserInviteMail $mail) use ($email) {
+            return $mail->hasTo($email);
+        });
+        // if user already invited, reject
+        $this
+            ->actingAs($manager)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND)
+            ->assertSessionHas('error');
+
+        // if user part of board, reject
+        $this->assertDatabaseMissing('project_user', [
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ]);
+        ProjectUserInvite::where([
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ])->delete();
+        $this->assertDatabaseMissing('project_user_invite', [
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ]);
+        ProjectUser::create([
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ]);
+        $this->assertDatabaseHas('project_user', [
+            'project_id' => $this->first_project->id,
+            'user_id' => $this->second_user->id,
+        ]);
+        $this
+            ->actingAs($manager)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FOUND)
+            ->assertSessionHas('error');
+    }
+
+    /** @test */
+    public function a_user_cannot_invite_other_users()
+    {
+        $user = User::factory()->create();
+        ProjectUser::create([
+            'user_id' => $user->id,
+            'project_id' => $this->first_project->id,
+            'is_manager' => false,
+        ]);
+
+        $email = 'unregistered@test.com';
+        $this->assertDatabaseMissing('project_user_invite', [
+            'email' => $email,
+            'project_id' => $this->first_project->id,
+        ]);
+        $this
+            ->actingAs($user)
+            ->post(route('projects.users.store', ['project' => $this->first_project, 'email' => $email]))
+            ->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->assertDatabaseMissing(
+            'project_user_invite',
+            ['project_id' => $this->first_project->id, 'user_id' => null, 'email' => $email]
+        );
     }
 }

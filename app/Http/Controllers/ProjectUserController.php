@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProjectUser\StoreRequest;
 use App\Http\Requests\ProjectUser\UpdateIsManagerRequest;
 use App\Http\Requests\ProjectUser\UpdateOptions;
 use App\Http\Resources\ProjectResource;
+use App\Mail\ProjectUserInviteMail;
 use App\Models\Project;
 use App\Models\ProjectUser;
+use App\Models\ProjectUserInvite;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,6 +50,46 @@ class ProjectUserController extends Controller
                 ->toArray(),
             'can_update' => $canUpdate,
         ]);
+    }
+
+    public function store(StoreRequest $request, Project $project)
+    {
+        $user = $request->user();
+        $canUpdate = $user->can('update', $project);
+        if (! $canUpdate) {
+            abort(403);
+        }
+
+        $isMember = ProjectUser::query()
+            ->join('users', 'users.id', '=', 'project_user.user_id')
+            ->where([
+                'project_id' => $project->id,
+                'email' => $request->get('email'),
+            ])->exists();
+        if ($isMember) {
+            return redirect()->back()->with('error', 'User already member...');
+        }
+
+        $invitedUser = User::where(['email' => $request->get('email')])->first();
+        $invited = ProjectUserInvite::query()
+            ->where([
+            'project_id' => $project->id,
+            'user_id' => $invitedUser?->id,
+            'email' => $request->get('email'),
+        ])->exists();
+        if ($invited) {
+            return redirect()->back()->with('error', 'User already invited...');
+        }
+
+        $projectUserInvite = ProjectUserInvite::create([
+            'project_id' => $project->id,
+            'user_id' => $invitedUser?->id,
+            'email' => $request->get('email'),
+        ]);
+
+        Mail::to($request->get('email'))->send(new ProjectUserInviteMail($invitedUser));
+
+        return redirect()->back()->with('success', 'User was invited to board!');
     }
 
     public function edit(Request $request, Project $project, User $user): Response
